@@ -8,6 +8,22 @@ class SingletonException(Exception):
         
 
 def new(clazz,*args):
+    ### this is just for perfomance ###
+    if clazz == LispNull:
+        if LispNull._instance != None:
+            return LispNull._instance
+    if clazz == LispTrue:
+        if LispTrue._instance != None:
+            return LispTrue._instance
+    if clazz == LispFalse:
+        if LispFalse._instance != None:
+            return LispFalse._instance
+    if clazz == LispSymbol:
+        try:
+            return LispSymbol._symbols[args[0]]
+        except:
+            pass
+    ### end of perfomance block ###
     ret = None;
     try:
         ret = clazz(*args);
@@ -44,17 +60,17 @@ class LispInteger(LispAtom):
         return str(self.value)
 
 class LispSymbol(LispAtom):
-    __symbols = {}
+    _symbols = {}
     def __init__(self, symbol):
         self.value = symbol
-        if len(LispSymbol.__symbols)==0:
-            LispSymbol.__symbols = {"NULL":new(LispNull), "TRUE":new(LispTrue), "FALSE":new(LispFalse)}
+        if len(LispSymbol._symbols)==0:
+            LispSymbol._symbols = {"NULL":new(LispNull), "TRUE":new(LispTrue), "FALSE":new(LispFalse)}
             print "init symbols"
         try:
-            symbl  = LispSymbol.__symbols[symbol]
+            symbl  = LispSymbol._symbols[symbol]
             raise SingletonException(symbl)
         except KeyError:
-            LispSymbol.__symbols[symbol] = self
+            LispSymbol._symbols[symbol] = self
     
 
     def __repr__(self):
@@ -64,32 +80,32 @@ class LispSymbol(LispAtom):
 
 
 class LispNull(LispSymbol):
-    __instance = None
+    _instance = None
     def __init__(self):
         self.value='()'
-        if LispNull.__instance:
-            raise SingletonException(LispNull.__instance)
-        LispNull.__instance= self
+        if LispNull._instance:
+            raise SingletonException(LispNull._instance)
+        LispNull._instance= self
     def __unicode__(self):
         return "NULL"
     
 class LispTrue(LispSymbol):
-    __instance = None
+    _instance = None
     def __init__(self):
         self.value='TRUE'
-        if LispTrue.__instance:
-            raise SingletonException(LispTrue.__instance)
-        LispTrue.__instance= self
+        if LispTrue._instance:
+            raise SingletonException(LispTrue._instance)
+        LispTrue._instance= self
     def __str__(self):
         return "TRUE"
     
 class LispFalse(LispSymbol):
-    __instance = None
+    _instance = None
     def __init__(self):
         self.value='FALSE'
-        if LispFalse.__instance:
-            raise SingletonException(LispFalse.__instance)
-        LispFalse.__instance= self
+        if LispFalse._instance:
+            raise SingletonException(LispFalse._instance)
+        LispFalse._instance= self
     def __unicode__(self):
         return "FALSE"
 
@@ -115,35 +131,19 @@ class LispCons(LispTyp):
         from LISP import Printer
         return Printer.printLisp(self)
     
-def _getParameter(parameter,element):
-    for i in range(len(parameter)):
-        if element == parameter[i]:
-            return i
-    return -1
 
-def _getOptCode(body,param_list):
-    if isinstance(body,LispSymbol):
-        index = _getParameter(param_list,body)
-        if index > -1:
-            return lispList(new(LispSymbol,"getParam"),LispInteger(index))
-    if isinstance(body,LispCons):
-        return LispCons(_getOptCode(body.first,param_list), _getOptCode(body.rest,param_list))
-    return body
-        
-
-class UserFunction(LispTyp):
+class UserFunction(LispAtom):
     def __init__(self,parameter,body,env):
         self.parameter = parameter
         self.param_list = Eval._lispList2PythonList(parameter)
         self.body = copy.copy(body)
         self.env = env
-        self.optcode = _getOptCode(body,self.param_list)
-        print self.body
-        print self.optcode
+        self.optcode = _getOptCode(body,self.env,self.param_list)
+      #  print self.body
+       # print self.optcode
         
     def execute(self,env, *unEvalArgs):
-        #paramList = LISP.Eval._lispList2PythonList(self.parameter)
-      # newEnv = LISP.Enviroment(self.env)
+#        return self.execute_body(env, *unEvalArgs)
         param= []
         for i in range(len(unEvalArgs)):
             evalParam = LISP.Eval.evall(unEvalArgs[i],env)
@@ -152,5 +152,45 @@ class UserFunction(LispTyp):
         self.env.setParameter(param)
         return LISP.Eval.evall(self.optcode,self.env)
 
+    def execute_body(self,env, *unEvalArgs):
+        paramList = LISP.Eval._lispList2PythonList(self.parameter)
+        newEnv = LISP.Enviroment(self.env)
+        for i in range(len(unEvalArgs)):
+            evalParam = LISP.Eval.evall(unEvalArgs[i],env)
+            newEnv.put(paramList[i],evalParam)
+            i=i+1
+        return LISP.Eval.evall(self.body,newEnv)
+    
     def __repr__(self):
         return "(lambda %s %s)" % (self.parameter, self.body)
+    
+    
+    
+def _getParameter(parameter,element):
+    for i in range(len(parameter)):
+        if element == parameter[i]:
+            return i
+    return -1
+def _getLocal(env,element):
+    return  env.get_local_index(element)
+ 
+def _getGlobal(env,element):
+    return env.get_global_index(element)    
+
+def _getOptCode(body,env, param_list):
+    if isinstance(body,LispSymbol):
+        index = _getParameter(param_list,body)
+        if index > -1:
+            return lispList(new(LispSymbol,"getParam"),LispInteger(index))
+        else: 
+            index = _getLocal(env,body)
+            if index > -1:
+                return lispList(new(LispSymbol,"getLocal"),LispInteger(index))
+            else:
+                index = _getGlobal(env,body)
+                if index > -1:
+                    return lispList(new(LispSymbol,"getGlobal"),LispInteger(index))
+    if isinstance(body,LispCons):
+        return LispCons(_getOptCode(body.first,env,param_list), _getOptCode(body.rest,env,param_list))
+    return body
+        

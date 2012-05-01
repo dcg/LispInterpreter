@@ -5,12 +5,12 @@ Created on 10.04.2012
 '''
 
 from LISP.LispClasses import LispInteger, LispSymbol, LispNull, new, LispTrue,\
-    LispFalse, UserFunction, LispCons, LispString
+    LispFalse, UserFunction, LispCons, LispString, LispAtom
 import LISP
 from LISP import Reader
 from LISP.Printer import printLisp
 
-class BuildInFunction(object):
+class BuildInFunction(LispAtom):
     def __init__(self,name):
         self.value="<<BuildInFunction "+name+">>"
     def __str__(self):
@@ -138,4 +138,17 @@ class GetParam(BuildInFunction):
         index = args[0].value
         return env.getParameter(index)
             
+class GetLocal(BuildInFunction):
+    def __init__(self):
+        super(GetLocal,self).__init__("GetLocal")
+    def execute(self,env, *args):
+        index = args[0].value
+        return env.get_local_by_index(index)
+            
+class GetGlobal(BuildInFunction):
+    def __init__(self):
+        super(GetGlobal,self).__init__("GetGlobal")
+    def execute(self,env, *args):
+        index = args[0].value
+        return env.get_global_by_index(index)
         
