@@ -1,20 +1,26 @@
 from LISP.LispClasses import LispInteger, LispSymbol, LispCons, LispNull, new,\
     LispTrue, LispFalse, UserFunction, LispString, LispAtom
-from LISP.BuildInFunctions import BuildInFunction, GetLocal, GetParam, GetGlobal
+from LISP.BuildInFunctions import BuildInFunction, GetLocal, GetParam, GetGlobal,\
+    GetSuperParam, GetSuperLocal
 getLocal = GetLocal()
 getParam = GetParam()
 getGlobal = GetGlobal()
+getSuperParam = GetSuperParam()
+getSuperLocal = GetSuperLocal()
 getLocalSym = new(LispSymbol,"getLocal")
 getParamSym = new(LispSymbol,"getParam")
-getGlobalSym = new(LispSymbol,"getParam")
+getGlobalSym = new(LispSymbol,"getGlobal")
+getSuperLocal = new(LispSymbol,"getSuperLocal")
+getSuperParam = new(LispSymbol,"getSuperParam")
 def evall(lisp, env):
+    if isinstance(lisp,(LispTrue,LispNull,LispFalse)):
+        return lisp;
+    
     if isinstance(lisp, LispSymbol):
         return evall(env.get(lisp),env)
     
     if issubclass(lisp.__class__, LispAtom):
         return lisp;
-#    if isinstance(lisp,(LispTrue,LispNull,LispFalse)):
-#        return lisp;
 #    if isinstance(lisp, LispInteger):
 #        return lisp;
 #    if isinstance(lisp, LispString):
@@ -29,6 +35,10 @@ def evall(lisp, env):
         return getParam.execute(env,lisp.rest.first)
     if lisp.first is getGlobalSym:
         return getGlobal.execute(env,lisp.rest.first)
+    if lisp.first is GetSuperParam:
+        return getSuperParam.execute(env,lisp.rest.first,lisp.rest.rest.first)
+    if lisp.first is GetSuperLocal:
+        return getSuperLocal.execute(env,lisp.rest.first,lisp.rest.rest.first)
     ### end of perfomance shortcuts###
 #perfomance    if isinstance(lisp, LispCons):
     evalFirst = evall(lisp.first,env)

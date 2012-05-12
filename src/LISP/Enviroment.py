@@ -6,7 +6,7 @@ Created on 10.04.2012
 from LISP import BuildInFunctions
 from LISP.LispClasses import LispSymbol,new, LispTrue, LispFalse
 from LISP.BuildInFunctions import Plus,Minus, Define, If, Eq, Lambda, Begin,\
-    Write,Print, Set, Quote, GetParam, GetLocal
+    Write,Print, Set, Quote, GetParam, GetLocal, GetSuperParam, GetSuperLocal
 from compiler.ast import Print
 from collections import OrderedDict
 import LISP
@@ -30,9 +30,7 @@ class Enviroment():
         
         if superEnv==None:
             Enviroment. __global_env=self
-            print "fooooo"
-            print Enviroment.__global_env
-            print "baaar"
+
             self.put(new(LispSymbol,"+"),Plus())
             self.put(new(LispSymbol,"-"),Minus())
             self.put(new(LispSymbol,"define"),Define())
@@ -47,6 +45,8 @@ class Enviroment():
             self.put(new(LispSymbol,"getParam"),GetParam())
             self.put(new(LispSymbol,"getLocal"),GetLocal())
             self.put(new(LispSymbol,"getGlobal"),GetParam())
+            self.put(new(LispSymbol,"getSuperParam"),GetSuperParam())
+            self.put(new(LispSymbol,"getSuperLocal"),GetSuperLocal())
         
     def set(self, key ,value):
         if key in self.map:
@@ -89,7 +89,10 @@ class Enviroment():
                 return i 
             i+=1
         return -1
-    def setParameter(self, param):
+    def setParameterSymbols(self,symbols):
+        self.parameter_symbols=symbols;
+        
+    def setParameterList(self, param):
         self.parameter=param
     def getParameter(self, index):
         return self.parameter[index]

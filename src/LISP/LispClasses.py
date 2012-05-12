@@ -137,11 +137,13 @@ class UserFunction(LispAtom):
         self.parameter = parameter
         self.param_list = Eval._lispList2PythonList(parameter)
         self.body = copy.copy(body)
-        self.env = env
+        self.env = LISP.Enviroment(env)
+        self.env.setParameterSymbols(self.param_list)
         self.optcode = _getOptCode(body,self.env,self.param_list)
-      #  print self.body
-       # print self.optcode
-        
+    # print "-------- ---------"
+    #    print "body: %s" % self.body
+    #    print "optcode: %s"% self.optcode
+    #    print "-----------------"
     def execute(self,env, *unEvalArgs):
 #        return self.execute_body(env, *unEvalArgs)
         param= []
@@ -149,7 +151,7 @@ class UserFunction(LispAtom):
             evalParam = LISP.Eval.evall(unEvalArgs[i],env)
             param.append(evalParam)
             i=i+1
-        self.env.setParameter(param)
+        self.env.setParameterList(param)
         return LISP.Eval.evall(self.optcode,self.env)
 
     def execute_body(self,env, *unEvalArgs):
@@ -176,6 +178,31 @@ def _getLocal(env,element):
  
 def _getGlobal(env,element):
     return env.get_global_index(element)    
+def _getSuperParam(env, element):
+    i = 1
+    _env = env.superEnv
+    while _env != None:
+        try:
+            index = _getParameter(_env.parameter_symbols,element)
+            if index > -1:
+                if _env.superEnv!=None:
+                    return (index,i)
+        except AttributeError as e:
+            pass
+        _env = _env.superEnv
+        i+=1
+    return (-1,-1)
+def _getSuperLocal(env, element):
+    i = 1
+    _env = env.superEnv
+    while _env != None:
+        index = _getLocal(_env,element)
+        if index > -1:
+            if _env.superEnv!=None:
+                return (index,i)
+        _env = _env.superEnv
+        i+=1
+    return (-1,-1)
 
 def _getOptCode(body,env, param_list):
     if isinstance(body,LispSymbol):
@@ -187,10 +214,30 @@ def _getOptCode(body,env, param_list):
             if index > -1:
                 return lispList(new(LispSymbol,"getLocal"),LispInteger(index))
             else:
-                index = _getGlobal(env,body)
-                if index > -1:
-                    return lispList(new(LispSymbol,"getGlobal"),LispInteger(index))
+                (index,super) =_getSuperParam(env,body)
+                if index >-1:
+                    return lispList(new(LispSymbol,"getSuperParam"),LispInteger(index),LispInteger(super))
+                else:
+                    (index,super) =_getSuperLocal(env,body)
+                    if index >-1:
+                        return lispList(new(LispSymbol,"getSuperLocal"),LispInteger(index),LispInteger(super))
+                    else:
+                        index = _getGlobal(env,body)
+                        if index > -1:
+                            return lispList(new(LispSymbol,"getGlobal"),LispInteger(index))
     if isinstance(body,LispCons):
-        return LispCons(_getOptCode(body.first,env,param_list), _getOptCode(body.rest,env,param_list))
+        return __getOptFunction(body, env, param_list)
     return body
+
+def __getOptFunction(func,env,param_list):
+    if func.first == new(LispSymbol,"lambda"):
+        return func
+    if func.first == new(LispSymbol,"define"):
+        env.put(func.rest.first,None)
+        return func
+    first = _getOptCode(func.first, env, param_list)
+    rest = _getOptCode(func.rest, env, param_list)
+    return LispCons(first,rest)
+    
+    
         

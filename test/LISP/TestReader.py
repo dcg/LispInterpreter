@@ -36,21 +36,19 @@ class Test(unittest.TestCase):
         readLisp(foo)
     
     def testReadString(self):
-        lisp1= readLisp("'foo'")
         lisp2= readLisp("\"foo\"")
         self.assert_(lisp2==LispString("foo"))
-        self.assert_(lisp1==LispString("foo"))
-        lisp2= readLisp("('foo' 'baar')")
+        lisp2= readLisp('("foo" "baar")')
         self.assert_(lisp2.first==LispString("foo"))
         self.assert_(lisp2.rest.first==LispString("baar"))
         lisp3=readLisp('(a "fooo")')
         self.assert_(lisp3.first==new(LispSymbol,"a"))
         self.assert_(lisp3.rest.first==LispString("fooo"))
         
-        lisp4 = readLisp("(lambda (x) (write 'fooo'))")
+        lisp4 = readLisp('(lambda (x) (write "fooo"))')
         self.assert_(lisp4.rest.rest.first.rest.first==LispString("fooo"))
 
-        lisp5 = readLisp("((lambda (x) (write 'fooo')) 5)")
+        lisp5 = readLisp('((lambda (x) (write "fooo")) 5)')
         print lisp5.first.rest.rest.first.rest.first
         print type(lisp5.first.rest.rest.first.rest.first)
         self.assert_(lisp5.first.rest.rest.first.rest.first==LispString("fooo"))

@@ -137,6 +137,16 @@ class GetParam(BuildInFunction):
     def execute(self,env, *args):
         index = args[0].value
         return env.getParameter(index)
+    
+class GetSuperParam(BuildInFunction):
+    def __init__(self):
+        super(GetSuperParam,self).__init__("GetSuperParam")
+    def execute(self,env, *args):
+        index = args[0].value
+        _env = None
+        for x in range(args[1].value):
+            _env=env.superEnv
+        return _env.getParameter(index)
             
 class GetLocal(BuildInFunction):
     def __init__(self):
@@ -144,6 +154,16 @@ class GetLocal(BuildInFunction):
     def execute(self,env, *args):
         index = args[0].value
         return env.get_local_by_index(index)
+    
+class GetSuperLocal(BuildInFunction):
+    def __init__(self):
+        super(GetSuperLocal,self).__init__("GetSuperLocal")
+    def execute(self,env, *args):
+        index = args[0].value
+        _env = None
+        for x in range(args[1].value):
+            _env=env.superEnv
+        return _env.get_local_by_index(index)
             
 class GetGlobal(BuildInFunction):
     def __init__(self):
