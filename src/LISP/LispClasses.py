@@ -132,7 +132,7 @@ class LispCons(LispTyp):
         return Printer.printLisp(self)
     
 
-class UserFunction(LispAtom):
+class UserFunction(LispTyp):
     def __init__(self,parameter,body,env):
         self.parameter = parameter
         self.param_list = Eval._lispList2PythonList(parameter)
@@ -140,6 +140,7 @@ class UserFunction(LispAtom):
         self.env = LISP.Enviroment(env)
         self.env.setParameterSymbols(self.param_list)
         self.optcode = _getOptCode(body,self.env,self.param_list)
+        self.bytecode = LISP.ByteCoder.getByteCode(LISP.ByteCoder.Bytecode(),self.optcode)
     # print "-------- ---------"
     #    print "body: %s" % self.body
     #    print "optcode: %s"% self.optcode
