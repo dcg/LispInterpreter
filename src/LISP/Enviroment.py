@@ -6,7 +6,7 @@ Created on 10.04.2012
 from LISP import BuildInFunctions
 from LISP.LispClasses import LispSymbol,new, LispTrue, LispFalse
 from LISP.BuildInFunctions import Plus,Minus, Define, If, Eq, Lambda, Begin,\
-    Write,Print, Set, Quote, GetParam, GetLocal, GetSuperParam, GetSuperLocal
+    Write,Print, Set, Quote, GetParam, GetLocal, GetSuperParam, GetSuperLocal, GetGlobal
 from compiler.ast import Print
 from collections import OrderedDict
 import LISP
@@ -44,9 +44,9 @@ class Enviroment():
             self.put(new(LispSymbol,"print"),BuildInFunctions.Print())
             self.put(new(LispSymbol,"getParam"),GetParam())
             self.put(new(LispSymbol,"getLocal"),GetLocal())
-            self.put(new(LispSymbol,"getGlobal"),GetParam())
             self.put(new(LispSymbol,"getSuperParam"),GetSuperParam())
             self.put(new(LispSymbol,"getSuperLocal"),GetSuperLocal())
+            self.put(new(LispSymbol,"getGlobal"),GetGlobal())
         
     def set(self, key ,value):
         if key in self.map:
