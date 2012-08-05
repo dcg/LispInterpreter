@@ -8,7 +8,7 @@ from LISP.LispClasses import LispSymbol,new, LispTrue, LispFalse
 from LISP.BuildInFunctions import Plus,Minus, Define, If, Eq, Lambda, Begin,\
     Write,Print, Set, Quote, GetParam, GetLocal, GetSuperParam, GetSuperLocal, GetGlobal,\
     LispTKLabel, LispTK, LispTKText, LispTKButton, Eval, Grt, Lwt, Str_Concat,\
-    Load, LispTKFrame, LispTKToplevel, Type, Call, LispTKScrollbar
+    Load, LispTKFrame, LispTKToplevel, Type, Call, LispTKScrollbar, Save
 from compiler.ast import Print
 from collections import OrderedDict
 import LISP
@@ -61,6 +61,7 @@ class Enviroment():
             self.put(new(LispSymbol,"eval"),Eval())
             self.put(new(LispSymbol,"str_concat"),Str_Concat())
             self.put(new(LispSymbol,"load"),Load())
+            self.put(new(LispSymbol,"save"),Save())
             self.put(new(LispSymbol,"type"),Type())
             self.put(new(LispSymbol,"call"),Call())
         

@@ -318,6 +318,17 @@ class Load(BuildInFunction):
         file.close()
         return new(LispString,ret)
     
+class Save(BuildInFunction):
+    def __init__(self):
+        super(Save,self).__init__("save")
+    def execute(self,env, *unEvalArgs):
+        file_name = LISP.Eval.evall(unEvalArgs[0],env)
+        txt = LISP.Eval.evall(unEvalArgs[1],env)
+        file = open(file_name.value,'w')
+        file.write(txt.value)
+        file.close()
+        return new(LispString,txt)
+    
 class Type(BuildInFunction):
     def __init__(self):
         super(Type,self).__init__("Typ")
