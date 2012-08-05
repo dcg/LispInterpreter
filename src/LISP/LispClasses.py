@@ -2,6 +2,9 @@ import LISP
 from LISP.Helper import lispList
 import Eval
 import copy
+from Tkinter import *
+
+from LISP import BCMachine
 class SingletonException(Exception):
     def __init__(self,singleton):
         self.singleton = singleton
@@ -130,7 +133,20 @@ class LispCons(LispTyp):
     def __repr__(self):
         from LISP import Printer
         return Printer.printLisp(self)
-    
+    def second(self):
+        return self.rest.first
+    def third(self):
+        return self.rest.rest.first
+    def fourth(self):
+        return self.rest.rest.rest.first
+    def __len__(self):
+        element = self
+        i=1
+        while element.rest != new(LispNull):
+            element = element.rest
+            i+=1
+        return i
+        
 
 class UserFunction(LispTyp):
     def __init__(self,parameter,body,env):
@@ -139,13 +155,32 @@ class UserFunction(LispTyp):
         self.body = copy.copy(body)
         self.env = LISP.Enviroment(env)
         self.env.setParameterSymbols(self.param_list)
-        self.optcode = _getOptCode(body,self.env,self.param_list)
-        self.bytecode = LISP.ByteCoder.getByteCode(LISP.ByteCoder.Bytecode(),self.optcode)
-    # print "-------- ---------"
-    #    print "body: %s" % self.body
-    #    print "optcode: %s"% self.optcode
-    #    print "-----------------"
-    def execute(self,env, *unEvalArgs):
+        print "-------- ---------"
+        print "body: %s" % self.body
+    #    if not self.body.first == new(LispSymbol,"lambda"):
+        self.optcode = LISP.OptCoder.getOptCode(body,self.env,self.param_list)
+        self.bytecode,self.literals = LISP.ByteCoder.getByteCode(LISP.ByteCoder.Bytecode(),LISP.ByteCoder.Literals(),self.optcode,self.env)
+        print "optcode: %s"% self.optcode
+        print "bytecode :%s"%self.bytecode
+        print "-----------------"
+        
+    def execute_ea(self,*evalArgs):
+        stack =[]
+        for arg in evalArgs:
+            stack.append(arg)
+        return BCMachine.executeBC(self.bytecode, self.literals, stack, self.env)
+    def execute(self,env, *unEvalArgs): 
+        stack=[]
+        param= []
+        for i in range(len(unEvalArgs)):
+            evalParam = LISP.Eval.evall(unEvalArgs[i],env)
+            param.append(evalParam)
+            i=i+1
+        self.env.setParameterList(param)
+        for p in param:
+            stack.append(p)
+        return BCMachine.executeBC(self.bytecode,self.literals,stack, self.env)   
+    def execute_opt(self,env, *unEvalArgs):
 #        return self.execute_body(env, *unEvalArgs)
         param= []
         for i in range(len(unEvalArgs)):
@@ -168,77 +203,27 @@ class UserFunction(LispTyp):
         return "(lambda %s %s)" % (self.parameter, self.body)
     
     
+''' GUI STUFF'''
+   
+class LispTKClass(LispAtom):
+    def __init__(self):
+        self.value=Tk()
+    def __repr__(self):
+        return '"%s"'%self.value
+    def __str__(self):
+        return '"%s"'%self.value   
+    def execute(self,env, *unEvalArgs):
+        arg = Eval.evall(unEvalArgs[0], env)
+        if(arg == new(LispSymbol,"mainloop")):
+            self.value.mainloop()
+            
+class LispTKLabelClass(LispAtom):
+    def __init__(self,root,text):
+        self.value=Label(root.value,text=text)        
     
-def _getParameter(parameter,element):
-    for i in range(len(parameter)):
-        if element == parameter[i]:
-            return i
-    return -1
-def _getLocal(env,element):
-    return  env.get_local_index(element)
- 
-def _getGlobal(env,element):
-    return env.get_global_index(element)    
-def _getSuperParam(env, element):
-    i = 1
-    _env = env.superEnv
-    while _env != None:
-        try:
-            index = _getParameter(_env.parameter_symbols,element)
-            if index > -1:
-                if _env.superEnv!=None:
-                    return (index,i)
-        except AttributeError as e:
-            pass
-        _env = _env.superEnv
-        i+=1
-    return (-1,-1)
-def _getSuperLocal(env, element):
-    i = 1
-    _env = env.superEnv
-    while _env != None:
-        index = _getLocal(_env,element)
-        if index > -1:
-            if _env.superEnv!=None:
-                return (index,i)
-        _env = _env.superEnv
-        i+=1
-    return (-1,-1)
+    def execute(self,env, *unEvalArgs):
+        arg = Eval.evall(unEvalArgs[0], env)
+        if(arg == new(LispSymbol,"pack")):
+            self.value.pack()
+            
 
-def _getOptCode(body,env, param_list):
-    if isinstance(body,LispSymbol):
-        index = _getParameter(param_list,body)
-        if index > -1:
-            return lispList(new(LispSymbol,"getParam"),LispInteger(index))
-        else: 
-            index = _getLocal(env,body)
-            if index > -1:
-                return lispList(new(LispSymbol,"getLocal"),LispInteger(index))
-            else:
-                (index,super) =_getSuperParam(env,body)
-                if index >-1:
-                    return lispList(new(LispSymbol,"getSuperParam"),LispInteger(index),LispInteger(super))
-                else:
-                    (index,super) =_getSuperLocal(env,body)
-                    if index >-1:
-                        return lispList(new(LispSymbol,"getSuperLocal"),LispInteger(index),LispInteger(super))
-                    else:
-                        index = _getGlobal(env,body)
-                        if index > -1:
-                            return lispList(new(LispSymbol,"getGlobal"),LispInteger(index))
-    if isinstance(body,LispCons):
-        return __getOptFunction(body, env, param_list)
-    return body
-
-def __getOptFunction(func,env,param_list):
-    if func.first == new(LispSymbol,"lambda"):
-        return func
-    if func.first == new(LispSymbol,"define"):
-        env.put(func.rest.first,None)
-        return func
-    first = _getOptCode(func.first, env, param_list)
-    rest = _getOptCode(func.rest, env, param_list)
-    return LispCons(first,rest)
-    
-    
-        

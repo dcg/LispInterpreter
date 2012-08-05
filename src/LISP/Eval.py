@@ -25,8 +25,8 @@ def evall(lisp, env):
 #        return lisp;
 #    if isinstance(lisp, LispString):
 #        return lisp;
-#    if isinstance(lisp, (BuildInFunction, UserFunction)):
-#        return lisp;
+    if isinstance(lisp, UserFunction):
+        return lisp;
 
     ###perfomance shortcuts####
     if lisp.first is getLocalSym:
@@ -50,6 +50,8 @@ def evall(lisp, env):
 def _lispList2PythonList(lispList):
     args = []
     element = lispList
+    if isinstance(element,LispAtom):
+        return [element]
     while element.rest is not new(LispNull):
         args.append(element.first)
         element = element.rest

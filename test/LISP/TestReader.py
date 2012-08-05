@@ -38,6 +38,8 @@ class Test(unittest.TestCase):
     def testReadString(self):
         lisp2= readLisp("\"foo\"")
         self.assert_(lisp2==LispString("foo"))
+        lisp2= readLisp('"~"foo~""')
+        self.assert_(lisp2==LispString('"foo"'))
         lisp2= readLisp('("foo" "baar")')
         self.assert_(lisp2.first==LispString("foo"))
         self.assert_(lisp2.rest.first==LispString("baar"))

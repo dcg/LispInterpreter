@@ -60,6 +60,8 @@ class Test(unittest.TestCase):
         val = evall(lisp,self.env)
         self.assert_(val == LispInteger(11))
         
+
+        
     def testevalu10(self):
         lisp = readLisp("(if FALSE (+ 5 6) (+ 4 3))")
         val = evall(lisp,self.env)
@@ -116,16 +118,16 @@ class Test(unittest.TestCase):
         val = evall(lisp,self.env)
         self.assert_(isinstance(val,UserFunction))
         
-        lisp = readLisp("(lambda (x) (print 'Foobar') 5)")
+        lisp = readLisp('(lambda (x) (print "Foobar") 5)')
         val = evall(lisp,self.env)
         self.assert_(isinstance(val,UserFunction))
 
-        lisp = readLisp("((lambda (x) (print 'Hallo Welt') (+ 5 x)) 5)")
+        lisp = readLisp('((lambda (x) (print "Hallo Welt") (+ 5 x)) 5)')
         val = evall(lisp,self.env)
         self.assert_(val == LispInteger(10))
   
     def testDefineBegin(self):
-        lisp = readLisp("(define (foo x) (print 'Hello World') (write (- 2 x)) (- 5 x) (+ 5 x))")
+        lisp = readLisp('(define (foo x) (print "Hello World") (write (- 2 x)) (- 5 x) (+ 5 x))')
         val = evall(lisp,self.env)
         lisp2 = readLisp("(foo 5)")
         val = evall(lisp2,self.env)

@@ -6,6 +6,8 @@ Created on 30.03.2012
 from LISP.LispClasses import LispAtom, LispNull, new, LispCons
 def printLisp(lispTyp):
     null = new(LispNull)
+    if lispTyp==None:
+        return ""
     if isinstance(lispTyp, LispAtom):
         return str(lispTyp.value)
     else:

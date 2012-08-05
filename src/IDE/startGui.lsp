@@ -1,0 +1,23 @@
+(define tf_input (lambda x y))
+(define tf_output (lambda x y))
+
+(define eval_input (lambda (x) (tf_output 'setText (eval (tf_input 'getText)))))
+(define get_wrap_eval_code_str "(define eval_input (lambda (x) (tf_output 'setText (eval (str_concat ~"(begin ~" (tf_input 'getText) ~")~")))))")
+(define get_wrap_eval_code (lambda (x) (tf_input 'setText get_wrap_eval_code_str)))
+(begin
+        (define root (tk$))
+        (define w (label$ root "Hallo Welt!!!!!!!!!11111111111111"))
+        (w 'pack)
+        (set! tf_input (text$ root))
+        (tf_input 'pack)
+        (define b_eval (button$ root "Eval" eval_input))
+        (b_eval 'pack)
+        (define b_wrap_eval_in_begin (button$ root "Wrap Eval in Begin" get_wrap_eval_code))
+        (b_wrap_eval_in_begin 'pack)
+        
+        (define b_test (button$ root "TEST" eval_input))
+        (b_test 'pack)
+        (set! tf_output (text$ root))
+        (tf_output 'pack)
+         )
+(root 'mainloop)

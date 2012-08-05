@@ -22,7 +22,7 @@ def _splitCommands(inp):
     string_mode = False
     while(i <len(inp)):
         if string_mode:
-            if inp[i] == "'" or inp[i] == '"':
+            if inp[i] == '"' and (i==0 or inp[i-1]!="~"):
                 string_mode = False
                 cmd+=inp[i]
                 cmds.append(cmd)
@@ -33,7 +33,7 @@ def _splitCommands(inp):
             closingBracket = findClosingBracket(inp, i);
             cmds.append(inp[i:closingBracket+1])
             i=closingBracket+1
-        elif inp[i] == "'" or inp[i] == '"':
+        elif inp[i] == '"' and (i == 0 or inp[i-1]!="~"):
             cmd+=inp[i]
             string_mode=True
         elif not inp[i].isspace():
@@ -54,6 +54,7 @@ def _readListContent(inp):
     if isZahl(inp):
         return new(LispInteger,inp)
     if isString(inp):
+        inp=inp.replace("~","")
         return new(LispString,inp[1:len(inp)-1])
     if isSymbol(inp):
         return new(LispSymbol,inp)
@@ -64,7 +65,7 @@ def _readListContent(inp):
         for cmd in cmds:
             element = _readLisp(cmd)
             cons = new(LispCons,element)
-            if last:
+            if last!=None:
                 last.rest=cons
             else:
                 first = cons
@@ -91,9 +92,10 @@ def readLisp(inp):
 
 
 def isString(inp):
-    if re.match("^'[^'.]*'$",inp) != None:
+    inp_test=inp.replace('~"',"~~__")
+    if re.match("^'[^'.]*'$",inp_test) != None:
         return True
-    if re.match('^"[^".]*"$',inp)!= None:
+    if re.match('^"[^".]*"$',inp_test)!= None:
         return True
 def isZahl(inp):
   #  print inp
