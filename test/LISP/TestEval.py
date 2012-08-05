@@ -127,11 +127,11 @@ class Test(unittest.TestCase):
         self.assert_(val == LispInteger(10))
   
     def testDefineBegin(self):
-        lisp = readLisp('(define (foo x) (print "Hello World") (write (- 2 x)) (- 5 x) (+ 5 x))')
+        lisp = readLisp('(define (foo x) (print "Hello World") (write "FOOOBAR") (- 5 2) (+ 5 1))')
         val = evall(lisp,self.env)
         lisp2 = readLisp("(foo 5)")
         val = evall(lisp2,self.env)
-        self.assert_(val==LispInteger(10))
+        self.assert_(val==LispInteger(6))
 
     def testSet(self):
         lisp = readLisp("(set! a 555)")

@@ -41,8 +41,10 @@ class Test(unittest.TestCase):
         self.assert_(val == LispInteger(14))
         
     def testeval_begin_in_function(self):
-        lisp = readLisp("((lambda (x) (begin (+ 4 3) (+ 2 3))))")
+        lisp = readLisp("(define foo (lambda (x) (begin (+ 4 3) (+ 2 3))))")
         val = evall(lisp,self.env)
+        lisp2 = readLisp("(foo)")
+        val = evall(lisp2,self.env)
         self.assert_(val == LispInteger(5))
 
 if __name__ == "__main__":

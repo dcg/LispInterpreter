@@ -20,13 +20,22 @@ def executeBC(bytecode,literals,stack,env):
             stack.append(literals[cmd_param])
         elif cmd=='PUSH-GLOBAL':
             stack.append(env.get_global_by_index(cmd_param))
+        elif cmd=='PUSH-LOCAL':
+            val = env.get_local_by_index(cmd_param)
+            stack.append(val)
         elif cmd=='PUSH-PARAM':
             stack.append(stack[cmd_param])
         elif cmd=='PUSH-SUPER-PARAM':
             stack.append(env.get_super_parameter_by_index(cmd_param,bytecode.bytecode_txt[pc].value))
             pc+=1
+        elif cmd=='PUSH-SUPER-LOCAL':
+            stack.append(env.get_super_local_by_index(cmd_param,bytecode.bytecode_txt[pc].value))
+            pc+=1
         elif cmd=="PUSH-INT":
             stack.append(LISP.LispClasses.LispInteger(cmd_param))
+        elif cmd=="DROP":
+            for i in range(cmd_param):
+                stack.pop()
         elif cmd=="JUMP_IF_FALSE":
             cond = stack.pop()
             if cond == LISP.LispClasses.new(LISP.LispClasses.LispSymbol,"FALSE"):
@@ -35,13 +44,15 @@ def executeBC(bytecode,literals,stack,env):
             pc=jump(cmd_param,bytecode,pc)
             
         elif cmd=='CALL':
-            func = stack.pop()
-            param=[]
-            for i in range(cmd_param):
-                param.append(stack.pop())
-            if isinstance(func, (LISP.BuildInFunctions.Lambda,LISP.BuildInFunctions.Eval)):
-                param.append(env)
-            stack.append(func.execute_ea(*param))
+            func = stack[-1]
+            if(isinstance(func,(LISP.BuildInFunctions.BuildInFunction,LISP.LispClasses.UserFunction))):
+                stack.pop()
+                param=[]
+                for i in range(cmd_param):
+                    param.append(stack.pop())
+                if isinstance(func, (LISP.BuildInFunctions.Lambda,LISP.BuildInFunctions.Eval,LISP.BuildInFunctions.Define)):
+                    param.append(env)
+                stack.append(func.execute_ea(*param))
         
 def jump(label,bytecode,pc):
     for i in range(len(bytecode.bytecode_txt)):

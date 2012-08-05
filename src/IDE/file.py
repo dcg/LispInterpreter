@@ -7,5 +7,6 @@ from IDE import repl
 def read(file,env):
     input = repl.Input(env)
     for line in file:
-     #   print line
+        line = line.replace("\n\n","\n")
+        print line
         input.add(line)

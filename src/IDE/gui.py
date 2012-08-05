@@ -18,8 +18,15 @@ w = Label(root, text="Hello, world")
 w.pack()
 t_input = Text(root)
 t_input.pack(expand=YES, fill=BOTH)
+
+scrollbar = Scrollbar(t_input)
+scrollbar.pack(side=RIGHT, fill=Y)
+scrollbar.config(command=t_input.yview)               
+t_input.configure(yscrollcommand=scrollbar.set)
 b_eval =Button(root,text="Eval", bg="green", command=foo)
 b_eval.pack(side="left",padx=20)
+tl = Toplevel()
+
 '''
 frame = Frame(root)
 b_bc =Button(frame,text="eval function and show bytecode")

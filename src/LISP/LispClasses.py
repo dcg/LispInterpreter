@@ -167,6 +167,13 @@ class UserFunction(LispTyp):
     def execute_ea(self,*evalArgs):
         stack =[]
         for arg in evalArgs:
+            if(arg == new(LispSymbol,"++bc++")):
+                bc =""
+                for b in self.bytecode.bytecode_txt:
+                    bc+=(str(b)+"\n")
+                return new(LispString,bc)
+            if(arg == new(LispSymbol,"++op++")):
+                return self.optcode
             stack.append(arg)
         return BCMachine.executeBC(self.bytecode, self.literals, stack, self.env)
     def execute(self,env, *unEvalArgs): 
@@ -174,6 +181,13 @@ class UserFunction(LispTyp):
         param= []
         for i in range(len(unEvalArgs)):
             evalParam = LISP.Eval.evall(unEvalArgs[i],env)
+            if(evalParam == new(LispSymbol,"++bc++")):
+                bc =""
+                for b  in self.bytecode.bytecode_txt:
+                    bc+=(str(b)+"\n")
+                return new(LispString,bc)
+            if(evalParam == new(LispSymbol,"++op++")):
+                return self.optcode
             param.append(evalParam)
             i=i+1
         self.env.setParameterList(param)
@@ -208,6 +222,7 @@ class UserFunction(LispTyp):
 class LispTKClass(LispAtom):
     def __init__(self):
         self.value=Tk()
+        self.value.title("SELF BUILDING LISP-GUI")
     def __repr__(self):
         return '"%s"'%self.value
     def __str__(self):
@@ -216,14 +231,5 @@ class LispTKClass(LispAtom):
         arg = Eval.evall(unEvalArgs[0], env)
         if(arg == new(LispSymbol,"mainloop")):
             self.value.mainloop()
-            
-class LispTKLabelClass(LispAtom):
-    def __init__(self,root,text):
-        self.value=Label(root.value,text=text)        
-    
-    def execute(self,env, *unEvalArgs):
-        arg = Eval.evall(unEvalArgs[0], env)
-        if(arg == new(LispSymbol,"pack")):
-            self.value.pack()
             
 

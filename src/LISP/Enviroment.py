@@ -7,7 +7,8 @@ from LISP import BuildInFunctions
 from LISP.LispClasses import LispSymbol,new, LispTrue, LispFalse
 from LISP.BuildInFunctions import Plus,Minus, Define, If, Eq, Lambda, Begin,\
     Write,Print, Set, Quote, GetParam, GetLocal, GetSuperParam, GetSuperLocal, GetGlobal,\
-    LispTKLabel, LispTK, LispTKText, LispTKButton, Eval, Grt, Lwt, Str_Concat
+    LispTKLabel, LispTK, LispTKText, LispTKButton, Eval, Grt, Lwt, Str_Concat,\
+    Load, LispTKFrame, LispTKToplevel, Type, Call, LispTKScrollbar
 from compiler.ast import Print
 from collections import OrderedDict
 import LISP
@@ -54,8 +55,14 @@ class Enviroment():
             self.put(new(LispSymbol,"tk$"),LispTK())
             self.put(new(LispSymbol,"text$"),LispTKText())
             self.put(new(LispSymbol,"button$"),LispTKButton())
+            self.put(new(LispSymbol,"frame$"),LispTKFrame())
+            self.put(new(LispSymbol,"toplevel$"),LispTKToplevel())
+            self.put(new(LispSymbol,"scrollbar$"),LispTKScrollbar())
             self.put(new(LispSymbol,"eval"),Eval())
             self.put(new(LispSymbol,"str_concat"),Str_Concat())
+            self.put(new(LispSymbol,"load"),Load())
+            self.put(new(LispSymbol,"type"),Type())
+            self.put(new(LispSymbol,"call"),Call())
         
     def set(self, key ,value):
         if key in self.map:

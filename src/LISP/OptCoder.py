@@ -72,8 +72,11 @@ def __getOptFunction(func,env,param_list):
         first = getOptCode(func.first, env, param_list)
         return LispCons(first,func.rest)
     if func.first == new(LispSymbol,"define"):
-        env.put(func.rest.first,None)
-        return func
+        env.put(func.rest.first,new(LispNull))
+        first = getOptCode(func.first, env, param_list)
+        symb = func.rest.first
+        rest = getOptCode(func.rest.rest, env, param_list)
+        return lispList(first,symb,rest)
     if func.first == new(LispSymbol,"+"):
         func = _normalizeFunction(func)
         print func

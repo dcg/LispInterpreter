@@ -95,7 +95,7 @@ def isString(inp):
     inp_test=inp.replace('~"',"~~__")
     if re.match("^'[^'.]*'$",inp_test) != None:
         return True
-    if re.match('^"[^".]*"$',inp_test)!= None:
+    if re.match('^"[^"]*"$',inp_test)!= None:
         return True
 def isZahl(inp):
   #  print inp

@@ -34,7 +34,7 @@ class Input(object):
                 tmp_inp=self.inp
                 self.inp=""
                 return self.eval(tmp_inp,self.env)
-        self.inp+="\n"
+        self.inp+=" "
     def eval(self,inp,env):
         lisp = Reader.readLisp(inp)
         val = Eval.evall(lisp,env)

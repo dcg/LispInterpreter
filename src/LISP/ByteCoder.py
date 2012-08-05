@@ -5,7 +5,7 @@ Created on 12.05.2012
 '''
 from LISP.LispClasses import LispAtom, LispCons, new, LispSymbol, LispNull,\
     UserFunction, LispInteger
-from LISP.BuildInFunctions import GetParam, BuildInFunction, Lambda, If
+from LISP.BuildInFunctions import GetParam, BuildInFunction, Lambda, If, Begin
 
 class Literals(list):
     pass
@@ -31,8 +31,9 @@ class Bytecode:
 def getByteCode(bytecode,literals,optcode,env):
     byte,lit = _getByteCode(bytecode,literals,optcode,env)
     return byte.reverse(),lit
-def _getByteCode(bytecode,literals,optcode,env):
-    
+def _getByteCode(bytecode,literals,optcode,env,begin=False,drop=False):
+    if(optcode is not LispNull and drop):
+        bytecode.bytecode_txt.append("DROP 1")
     if isinstance(optcode ,LispNull):
         return bytecode,literals
     if isinstance(optcode,LispInteger):
@@ -43,7 +44,7 @@ def _getByteCode(bytecode,literals,optcode,env):
         bytecode.bytecode_txt.append("PUSH-CONSTANT %s" % (len(literals)-1))
         return bytecode,literals
     if isinstance(optcode.first, LispCons):
-        
+        push2=None
         if isinstance(optcode.first.first, LispSymbol):
             inst = optcode.first
             if inst.first.value =='getParam':
@@ -59,18 +60,21 @@ def _getByteCode(bytecode,literals,optcode,env):
                 real_value = env.get_local_by_index(inst.rest.first.value)
                 
             if inst.first.value =='getSuperLocal':
-                bytecode.bytecode_txt.append(inst.third())
+                push2 = inst.third()
                 push = "PUSH-SUPER-LOCAL %s"
                 real_value = env.get_super_local_by_index(inst.second().value,inst.third().value)
                 
             if inst.first.value =='getSuperParam':
-                bytecode.bytecode_txt.append(inst.third())
+                push2 = inst.third()
                 push = "PUSH-SUPER-PARAM %s"
                 real_value = env.get_super_parameter_by_index(inst.second().value,inst.third().value)
                 
                 
             skip =False;
-            if isinstance(real_value,Lambda):
+            _begin=False
+            if isinstance(real_value,Begin):
+                _begin=True
+            elif isinstance(real_value,Lambda):
                 literals.append(optcode.rest)
                 call_count=len(optcode.rest)
 #                bytecode.bytecode_txt.append("CALL %s "%call_count)
@@ -85,19 +89,29 @@ def _getByteCode(bytecode,literals,optcode,env):
                 make_if_bytecode(optcode,bytecode,literals,env)
                 return bytecode,literals
             elif _isFunctionCallNeeded(real_value):
-                bytecode.bytecode_txt.append("CALL %s"%len(optcode.rest))
-                
-            bytecode.bytecode_txt.append(push %inst.rest.first.value)
+                if not optcode.rest is new(LispNull): #Sonst ist die Funktion zu einem Wert geworden
+                    bytecode.bytecode_txt.append("CALL %s"%len(optcode.rest))
+            if(push2 != None):
+                bytecode.bytecode_txt.append(push2)
+            if not _begin:
+                bytecode.bytecode_txt.append(push %inst.rest.first.value)
             if not skip:
-                _getByteCode(bytecode, literals, optcode.rest, env)
+                _getByteCode(bytecode, literals, optcode.rest, env,begin=_begin)
             else:
                 for push2 in pushes:
                     bytecode.bytecode_txt.append(push2)
             return bytecode,literals
     
     if isinstance(optcode,LispCons):
-        _getByteCode(bytecode,literals,optcode.first,env)
-        _getByteCode(bytecode,literals,optcode.rest,env)
+        _drop=True
+        if(optcode.rest is new(LispNull)):
+            _drop=False
+        if begin:
+            _getByteCode(bytecode,literals,optcode.rest,env, begin=True)
+            _getByteCode(bytecode,literals,optcode.first,env,drop=_drop)
+        else:    
+            _getByteCode(bytecode,literals,optcode.first,env)
+            _getByteCode(bytecode,literals,optcode.rest,env)
         return bytecode,literals
         
   
@@ -106,7 +120,6 @@ def _isFunctionCallNeeded(real_value):
         return True
     if isinstance(real_value,BuildInFunction):
         return True
-
 
 def label_generator():
     i = 11111111111111111
