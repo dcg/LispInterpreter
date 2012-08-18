@@ -277,6 +277,11 @@ class GetGlobal(BuildInFunction):
 class Eval(BuildInFunction):
     def __init__(self):
         super(Eval,self).__init__("Eval")
+    def execute(self,env, *args):
+        src = LISP.evall(args[0], env)
+        lisp = LISP.Reader.readLisp(src.value)
+        ret= LISP.Eval.evall(lisp,env)
+        return ret
     def execute_ea(self,lispSrc,env):
         lisp = LISP.Reader.readLisp(lispSrc.value)
         ret= LISP.Eval.evall(lisp,env)

@@ -14,7 +14,8 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     print type(options)
     files = options.filename
-    files=["IDE/startGUI.lsp"]
+    if(files ==None):
+        files=["IDE/startGui.lsp"]
     if files != None:
         for file in files:
             f = open(file,'r')

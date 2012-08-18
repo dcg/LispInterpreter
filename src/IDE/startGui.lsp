@@ -1,5 +1,5 @@
-(define tf_input (lambda x y))
-(define tf_output (lambda x y))
+(define tf_input +)
+(define tf_output +)
 
 (define eval_input (lambda (x) (tf_output 'setText (eval (tf_input 'getText)))))
 (define load_file (lambda (x) (tf_input 'setText (load "IDE/moreGui.lsp"))))
