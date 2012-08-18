@@ -288,7 +288,7 @@ In `startGui.lsp` befindet sich der Code für eine rudimentäre GUI, die einzig ei
 
 	(define eval_input (lambda (x) (tf_output 'setText (eval (tf_input 'getText)))))
 
-![SimpleGui](/screenshots/Gui1.png "Simple Gui")
+![SimpleGui](https://raw.github.com/dcg/LispInterpreter/bytecode/screenshots/Gui1.png "Simple Gui")
 
 Da die Gui im Kontext des Interpreters definiert wurde, kann sie auch über diesen manipuliert werden.  
 Eine umfangreichere Gui-Manipulation kann z.B. über die Datei 'IDE/moreGui.lsp' erreicht werden.
@@ -301,7 +301,7 @@ So wird jeweils ein Fenster für die Optcode- als auch für die Bytecode-Anzeige g
 
 Weiter besitzt die erweiterte GUI, über einen Scrollbalken und einen Clear-Button, der das Eingabefeld löscht.
 
-![ComplexGui](/screenshots/Gui2.png "Komplexe Gui")
+![ComplexGui](https://raw.github.com/dcg/LispInterpreter/bytecode/screenshots/Gui2.png "Komplexe Gui")
 
 Möchte man den erstellen Code speichern, empfiehlt es sich noch einen Speicher-Button zur Gui hinzuzufügen. Dazu wurde während der Entwicklung immer ein Fenster erzeugt, in den man den Code zwischenspeichern kann, um ihn dann in eine Datei zu schreiben.
 
